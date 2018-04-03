@@ -1,11 +1,11 @@
 # pymeta
-pymeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specifically crafted search queries to identify and download the following files (pdf, xls, xlsx, doc, docx, ppt, pptx) from a particular domain using Google and Bing. Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/). This is a common place for penetration testers to find internal domain names, usernames, naming conventions, and software/version numbers.
+Pymeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specifically crafted search queries to identify and download the following files (pdf, xls, xlsx, doc, docx, ppt, pptx) from a particular domain using Google and Bing. Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/). This is a common place for penetration testers to find internal domain names, usernames, naming conventions, and software/version numbers.
 
 Pymeta can also be pointed at a directory to extract metadata from files manually downloaded using the '-dir' command line argument. See the 'Usage', and 'All Options' sections for more information. 
 
 During metadata extraction, unique 'Author', 'Creator', and 'Producer' fields will be written to the terminal. However, more verbose output can be accomplished by generating a csv report with the '-csv' command line argument. 
 
-*pymeta is written in python3, use the setup.sh script to ensure all required libraries are installed.*
+*Pymeta is written in python3, use the setup.sh script to ensure all required libraries are installed.*
 
 ## Getting Started
 In the Linux terminal run:
