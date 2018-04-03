@@ -208,7 +208,7 @@ if __name__ == '__main__':
         args = argparse.ArgumentParser(description="""
             {0} (v.{1})
    -----------------------------------
-Search the web for files on the targetd domain
+Search the web for files on the targeted domain
 and extract metadata.
 
 usage:
