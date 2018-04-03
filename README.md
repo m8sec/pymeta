@@ -15,13 +15,13 @@ In the Linux terminal run:
 
 ## Usage
 * Search Google and Bing for files within example.com and extract metadata to terminal<br>
-`python3 enumdb.py -d example.com`
+`python3 pymeta.py -d example.com`
 
 * Search Google only for files within example.com and extract metadata to a csv report<br>
-`python3 enumdb.py -d example.com -s google -csv`
+`python3 pymeta.py -d example.com -s google -csv`
 
 * Extract metadata from files within the given directory and create csv report<br>
-`python3 enumdb.py -dir ../Downloads/ -csv`
+`python3 pymeta.py -dir ../Downloads/ -csv`
 
 
 ## All Options
