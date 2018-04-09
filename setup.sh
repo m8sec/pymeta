@@ -24,7 +24,7 @@ else
 fi
 
 echo -e "[*] Checking for Exiftool"
-if [[ $(python3 -V 2>&1) == *"not found"* ]]
+if [[ $(exiftool -ver) == *"not found"* ]]
 then
     echo -e "[*] Installing Exiftool"
     apt-get install exiftool -y
