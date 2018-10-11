@@ -1,4 +1,7 @@
 # pymeta
+![](https://img.shields.io/badge/Python-3.6+-blue.svg)&nbsp;&nbsp;
+![](https://img.shields.io/badge/License-GPL%203.0-green.svg)
+
 Pymeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specially crafted search queries to identify and download the following file types (pdf, xls, xlsx, doc, docx, ppt, pptx) from a given domain using Google and Bing. Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/). This is a common place for penetration testers to find internal domain names, usernames, software/version numbers, and identify an organization's naming conventions.
 
 Pymeta can also be pointed at a directory to extract metadata from files manually downloaded using the '-dir' command line argument. See the 'Usage', and 'All Options' sections for more information. 
