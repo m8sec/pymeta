@@ -17,20 +17,22 @@ from urllib3 import disable_warnings, exceptions
 disable_warnings(exceptions.InsecureRequestWarning)
 
 class pymeta():
-    UA  = [line.strip() for line in open('./user_agents.txt')]
+    UA  = [line.strip() for line in open(os.path.join(os.path.dirname(os.path.realpath(__file__)),'user_agents.txt'))]
     URL = {'google1' : 'https://www.google.com/search?q=site:{}+filetype:{}&num=100',
            'google2' : 'https://www.google.com/search?q=site:{}+filetype:{}&num=100&start={}',
            'bing1'   : 'http://www.bing.com/search?q=site:{}%20filetype:{}',
            'bing2'   : 'http://www.bing.com/search?q=site:{}%20filetype:{}&first={}'}
     total_links = 0
     links = []
+    output = './'
+    filename = ''
 
     def setup_logging(self, domain):
-        write_dir = './{}_meta/'.format(domain[0:4])
+        write_dir = os.path.join(self.output, '{}_meta/'.format(self.filename))
         #If dir already exists, add dir_count to name of new folder
         dir_count = 2
         while os.path.exists(write_dir):
-            write_dir = './{}_meta{}/'.format(domain[0:4], dir_count)
+            write_dir = os.path.join(self.output, '{}_meta{}/'.format(self.filename, dir_count))
             dir_count += 1
         os.mkdir(write_dir)
         return write_dir
@@ -109,34 +111,40 @@ class pymeta():
             tmp_head = []
             tmp_data = []
             # Extract metadata in tab-delimited list to split output
-            meta = getoutput("exiftool -t '{}'".format(file_dir + f)).splitlines()
-            for m in meta:
-                s = m.split("\t")
-                tmp_head.append(s[0])
-                tmp_data.append(s[1])
-            if self.links:
-                write_file(outfile, "\"{}\",".format(self.links[link_count]))
-                link_count += 1
-            for x in meta_fields:
-                try:
-                    write_file(outfile, "\"{}\",".format(tmp_data[tmp_head.index(x)]))
-                except Exception as e:
-                    #print(e)
-                    write_file(outfile, "\"n/a\",")
-            write_file(outfile, "\n")  # newline
+            try:
+                meta = getoutput("exiftool -t '{}'".format(file_dir + f)).splitlines()
+                for m in meta:
+                    s = m.split("\t")
+                    tmp_head.append(s[0])
+                    tmp_data.append(s[1])
+                if self.links:
+                    write_file(outfile, "\"{}\",".format(self.links[link_count]))
+                    link_count += 1
+                for x in meta_fields:
+                    try:
+                        write_file(outfile, "\"{}\",".format(tmp_data[tmp_head.index(x)]))
+                    except Exception as e:
+                        #print(e)
+                        write_file(outfile, "\"n/a\",")
+                write_file(outfile, "\n")  # newline
+            except Exception as e:
+                print("Error with processing file {}: {}".format(f, e))
 
     def extract_term(self,file_dir):
         #Extract metadata and write unique Author, Creator, & Producer fields to terminal
         print("[*] Displaying all unique metadata, use -csv for more")
         found = []
         for f in os.listdir(file_dir):
-            meta = getoutput("exiftool '{}'".format(file_dir+f)).splitlines()
-            for m in meta:
-                n = m.split(":")
-                if "Author" in n[0] or "Creator" == n[0].strip() or "Producer" == n[0].strip():
-                    if n[1].strip() and n[1].strip() not in found:
-                        found.append(n[1].strip())
-                        print("    {:8} : ".format(n[0].strip()) + n[1].strip())
+            try:
+                meta = getoutput("exiftool '{}'".format(file_dir+f)).splitlines()
+                for m in meta:
+                    n = m.split(":")
+                    if "Author" in n[0] or "Creator" == n[0].strip() or "Producer" == n[0].strip():
+                        if n[1].strip() and n[1].strip() not in found:
+                            found.append(n[1].strip())
+                            print("    {:8} : ".format(n[0].strip()) + n[1].strip())
+            except Exception as e:
+                print("Error with processing file {}: {}".format(f, e))
 
 def write_file(file, data):
     if os.path.exists(file):
@@ -166,8 +174,17 @@ def main(args):
         exit(0)
     #Start pymeta
     filetypes = ['pdf', 'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx']
+
     pyme = pymeta()
+    pyme.output = args.output
+    
     if args.domain:
+        if args.filename == 'original':
+            filename = args.domain[0:4]
+        else:
+            filename = args.domain
+
+        pyme.filename = filename
         print("\n[*] Starting web search")
         print("[*] Extension  |  Number of New Links Found  |  Search URL")
         #Seach Google &/or Bing for all file extensions in domain
@@ -190,10 +207,11 @@ def main(args):
     #Extract metadata from dir
     if args.csv:
         #create output file name
+
         try:
-            outfile = "./pymeta_{}.csv".format(args.domain[0:4])
+            outfile = os.path.join(args.output, "pymeta_{}.csv".format(filename))
         except:
-            outfile = './pymeta_{}.csv'.format(timestamp())
+            outfile = os.path.join(args.output, 'pymeta_{}.csv'.format(timestamp()))
         # Write csv report
         print("[*] Extracting Metadata from folder: {}, to {}".format(args.file_dir, outfile))
         pyme.extract_csv(args.file_dir, outfile)
@@ -221,6 +239,8 @@ usage:
         args.add_argument('-s', dest='engine', type=str, default='all', help='Search engine to use: google, bing, all (Default: all)')
         args.add_argument('-m', dest='max_results', type=int, default=50, help='Max results to collect per file type (Default: 50)')
         args.add_argument('-csv', dest="csv", action='store_true', help="write all metadata to CSV (Default: display in terminal)")
+        args.add_argument('-o', dest="output", type=str, help="Path to store output (Default is PyMeta folder)", default="./")
+        args.add_argument('-f', dest="filename", type=str, choices=['original', 'full'], help="File/folder naming scheme (original or full name)", default='original')
         args = args.parse_args()
         #Start Main
         main(args)
