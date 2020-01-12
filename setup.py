@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='pythonmeta',
+    name='pymetadata',
     version='1.0.1',
     author = 'm8r0wn',
     author_email = 'm8r0wn@protonmail.com',
@@ -28,6 +28,6 @@ setup(
         "Topic :: Security"
     ],
     entry_points= {
-        'console_scripts': ['pymeta=pymeta:main', 'pythonmeta=pymeta:main']
+        'console_scripts': ['pymeta=pymeta:main', 'pymetadata=pymeta:main']
     }
 )
