@@ -227,7 +227,7 @@ def launcher(args):
 
 def main():
     try:
-        version = '1.0.1'
+        version = '1.0.2'
         args = argparse.ArgumentParser(description="""
             PyMeta
    -----------------------------------
