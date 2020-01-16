@@ -2,11 +2,11 @@
 ![](https://img.shields.io/badge/Python-3.6+-blue.svg)&nbsp;&nbsp;
 ![](https://img.shields.io/badge/License-GPL%203.0-green.svg)
 
-Pymeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specially crafted search queries to identify and download the following file types (pdf, xls, xlsx, doc, docx, ppt, pptx) from a given domain using Google and Bing. Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/). This is a common place for penetration testers to find internal domain names, usernames, software/version numbers, and identify an organization's naming conventions.
 
-Pymeta can also be pointed at a directory to extract metadata from files manually downloaded using the '-dir' command line argument. See the 'Usage', and 'All Options' sections for more information. 
+Pymeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specially crafted search queries to identify and download the following file types (pdf, xls, xlsx, csv, doc, docx, ppt, pptx) from a given domain using Google and Bing scraping. Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/) and added to a ```.csv``` report. Metadata is a common place for penetration testers to find internal domain names, usernames, software/version numbers, and help identify an organization's naming convention.
 
-During metadata extraction, unique 'Author', 'Creator', and 'Producer' fields will be written to the terminal. However, more verbose output can be accomplished by generating a csv report with the '-csv' command line argument. 
+Pymeta can also be pointed at a directory to extract metadata from files manually downloaded using the ```-dir``` command line argument. See the [Usage](#Usage), or [All Options](#All-Options) section for more information. 
+
 
 ## Install
 * PyPi (last release)
@@ -33,12 +33,20 @@ python3 setup.py install
 
 
 ## All Options
-    -h, --help      show help message and exit
-    -d DOMAIN       Target domain
-    -dir FILE_DIR   Directory of files to extract Metadata
-    -s ENGINE       Search engine to use: google, bing, all (Default: all)
-    -m MAX_RESULTS  Max results to collect per file type (Default: 50)
-    -csv            write all metadata to CSV (Default: display in terminal)
+```
+Target Options:
+  -d DOMAIN             Target domain
+  -dir FILE_DIR         Pre-existing directory of files
+
+Search Options:
+  -s {google,bing,all}  Search engine(s) to scrape
+  -m MAX_RESULTS        Max results per file type, per search engine (Default: 50)
+
+Output Options:
+  -o OUTPUT_DIR         Path to store PyMeta's download folder (Default: ./)
+  -f FILENAME           Custom report path/name.csv
+  --debug               Show links as they are collected during scraping
+```
     
 ## Credit
 - Beau Bullock [(@dafthack)](https://twitter.com/dafthack) - [https://github.com/dafthack/PowerMeta](https://github.com/dafthack/PowerMeta)
