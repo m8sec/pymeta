@@ -22,14 +22,11 @@ python3 setup.py install
 ```
 
 ## Usage
-* Search Google and Bing for files within example.com and extract metadata to terminal:<br>
-```pymeat -d example.com```
-
-* Search Google only for files within example.com and extract metadata to a csv report:<br>
-```pymeta -d example.com -s google -csv```
+* Search Google and Bing for files within example.com and extract metadata to a csv report:<br>
+```pymeta -d example.com```
 
 * Extract metadata from files within the given directory and create csv report:<br>
-```pymeta -dir ../Downloads/ -csv```
+```pymeta -dir Downloads/```
 
 
 ## All Options
@@ -39,12 +36,12 @@ Target Options:
   -dir FILE_DIR         Pre-existing directory of files
 
 Search Options:
-  -s {google,bing,all}  Search engine(s) to scrape
+  -s {google,bing,all}  Search engine(s) to scrape (Default: all)
   -m MAX_RESULTS        Max results per file type, per search engine (Default: 50)
 
 Output Options:
   -o OUTPUT_DIR         Path to store PyMeta's download folder (Default: ./)
-  -f FILENAME           Custom report path/name.csv
+  -f FILENAME           Custom report path/name.csv (Optional)
   --debug               Show links as they are collected during scraping
 ```
     

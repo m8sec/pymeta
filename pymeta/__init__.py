@@ -152,6 +152,9 @@ def create_reportFile(filename, domain):
             if len(tmp) >= 4:
                 break
 
+        if not tmp:
+            tmp = timestamp()
+
         report_name = "{}_meta".format(tmp)
         report_name = dedup_fileName(report_name, ext='.csv')
     return report_name
