@@ -14,7 +14,7 @@ from urllib3 import disable_warnings, exceptions
 disable_warnings(exceptions.InsecureRequestWarning)
 
 class PyMeta():
-    def __init__(self, debug=False):
+    def __init__(self, jitter, debug=False):
         self.__real_path   = os.path.join(os.path.dirname(os.path.realpath(__file__)))
         self.__exiftool    = '{}/resources/exiftool'.format(self.__real_path)
         self.__user_agents = [line.strip() for line in open('{}/resources/user_agents.txt'.format(self.__real_path))]
@@ -22,8 +22,11 @@ class PyMeta():
                               'bing'  : 'http://www.bing.com/search?q=site:{}%20filetype:{}&first={}'}
 
         self.file_types = ['pdf', 'xls', 'xlsx', 'csv', 'doc', 'docx', 'ppt', 'pptx']
+        self.running    = True
         self.debug      = debug
         self.links      = []
+        self.detection  = 0
+        self.jitter     = jitter
 
     def web_search(self, search, domain, ext, search_cap):
         http        = re.compile("http([^\)]+){}([^\)]+)\.{}".format(domain, ext))
@@ -31,13 +34,19 @@ class PyMeta():
         link_count  = -1  # Count used to increment results in search URL
         total_links = 0   # Ensure search doesnt exceed maximum
 
-        while True:
+        while self.running:
             tmp        = len(self.links)
             search_url = self.__urls[search].format(domain, ext, str(link_count + 1))
             try:
                 headers    = {'User-Agent' : choice(self.__user_agents)}
                 resp       = requests.get(search_url, headers=headers, verify=False, timeout=5)
                 soup       = BeautifulSoup(resp.content, 'html.parser')
+
+                # Captcha check on first pass of every Google search
+                if search =='google' and link_count <= -1:
+                    if self.detection_check(resp):
+                        sleep(self.jitter)
+                        return
 
                 for link in soup.findAll('a'):
                     if total_links >= search_cap:
@@ -50,21 +59,36 @@ class PyMeta():
                                 link_count += 1
                                 if http.match(link) or https.match(link):
                                     if link not in self.links:
-                                        if self.debug: print("[++] {}".format(link))
+                                        if self.debug: print("[++] Found: {}".format(link))
                                         self.links.append(link)
                                         total_links += 1
-                        except:
-                            pass
+                        except Exception as e:
+                            if self.debug: print("[**] Link Parser Error: {}".format(str(e)))
 
                 print("[*] {:<4}:{:>3} {}".format(ext, (len(self.links)-tmp), search_url))
                 if (len(self.links)-tmp) == 0:
                     return
-                sleep(1)
+                sleep(self.jitter)
             except KeyboardInterrupt:
                 print("[!] Key event detected")
                 exit(0)
-            except:
-                pass
+            except Exception as e:
+                if self.debug: print("[**] Web Search Error: {}".format(str(e)))
+
+    def detection_check(self, resp):
+        if "you may be asked to solve the CAPTCHA" in resp.text and self.detection <= 1:
+            self.detection += 1
+            self.jitter = self.jitter + 5
+            print("[!] Captcha'ed: Increasing jitter to {}".format(self.jitter))
+            return True
+        elif "you may be asked to solve the CAPTCHA" in resp.text and self.detection >= 2:
+            print("[!] Captcha'ed: Change source IP's or come back later...")
+            if len(self.links) > 0:
+                self.running = False
+                return True
+            else:
+                exit(0)
+        return False
 
     def download_files(self, links, write_dir):
         for link in links:
@@ -202,7 +226,7 @@ def dir_handler(pymeta, input_dir, report_file):
 # Main
 ######################################
 def launcher(args):
-    pymeta = PyMeta(args.debug)
+    pymeta = PyMeta(args.jitter, args.debug)
 
     if args.domain:
         domain_handler(pymeta, args.output_dir, args.filename, args.search, args.max_results, args.domain)
@@ -212,7 +236,7 @@ def launcher(args):
 
 def main():
     try:
-        version = '1.0.3'
+        version = '1.0.4'
         args = argparse.ArgumentParser(description="""
             PyMeta v.{}
    -----------------------------------
@@ -232,6 +256,7 @@ usage:
         search = args.add_argument_group("Search Options")
         search.add_argument('-s', dest='search', choices=['google','bing','all'], default='all', help='Search engine(s) to scrape')
         search.add_argument('-m', dest='max_results', type=int, default=50, help='Max results per file type, per search engine (Default: 50)')
+        search.add_argument('-j', dest='jitter', type=int, default=2, help='Seconds between search requests (Default: 2)')
 
         output = args.add_argument_group("Output Options")
         output.add_argument('-o', dest="output_dir", type=str, help="Path to store PyMeta's download folder (Default: ./)", default="./")
