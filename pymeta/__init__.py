@@ -59,9 +59,9 @@ class PyMeta():
                                 link_count += 1
                                 if http.match(link) or https.match(link):
                                     if link not in self.links:
-                                        if self.debug: print("[++] Found: {}".format(link))
                                         self.links.append(link)
                                         total_links += 1
+                                        if self.debug: print("[++] Found: {}".format(link))
                         except Exception as e:
                             if self.debug: print("[**] Link Parser Error: {}".format(str(e)))
 
@@ -104,7 +104,7 @@ class PyMeta():
                 pass
 
     def create_csv(self, file_dir, output_file):
-        cmd = "{} -csv {}* > {}".format(self.__exiftool,file_dir,  output_file)
+        cmd = "perl {} -csv {}* > {}".format(self.__exiftool,file_dir,  output_file)
         resp = getoutput(cmd)
         if self.links:
             print("[*] Adding source URL's to the report")
