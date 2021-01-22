@@ -18,8 +18,9 @@ class PyMeta():
         self.__real_path   = os.path.join(os.path.dirname(os.path.realpath(__file__)))
         self.__exiftool    = '{}/resources/exiftool'.format(self.__real_path)
         self.__user_agents = [line.strip() for line in open('{}/resources/user_agents.txt'.format(self.__real_path))]
-        self.__urls        = {'google': 'https://www.google.com/search?q=site:{}+filetype:{}&num=100&start={}',
-                              'bing'  : 'http://www.bing.com/search?q=site:{}%20filetype:{}&first={}'}
+        self.__urls        = {'google'    : 'https://www.google.com/search?q=site:{}+filetype:{}&num=100&start={}',
+                              'bing'      : 'http://www.bing.com/search?q=site:{}%20filetype:{}&first={}',
+                              'duckduckgo': 'https://duckduckgo.com/?q=site%3A{}%20filetype%3A{}&ia=web'}
 
         self.file_types = ['pdf', 'xls', 'xlsx', 'csv', 'doc', 'docx', 'ppt', 'pptx']
         self.running    = True
@@ -204,6 +205,8 @@ def domain_handler(pymeta, output_dir, filename, search, max_results, domain):
             pymeta.web_search('google', domain, ext, max_results)
         if search in ['bing', 'all']:
             pymeta.web_search('bing', domain, ext, max_results)
+        if search in ['duckduckgo', 'all']:
+            pymeta.web_search('duckduckgo', domain, ext, max_results)
 
     if len(pymeta.links) == 0:
         print("[-] No Results found, check search engine for captchas and manually inspect inputs\n")
@@ -254,7 +257,7 @@ usage:
         action.add_argument('-dir', dest="file_dir", type=lambda x: validate_dir(x), default=False, help="Pre-existing directory of files")
 
         search = args.add_argument_group("Search Options")
-        search.add_argument('-s', dest='search', choices=['google','bing','all'], default='all', help='Search engine(s) to scrape')
+        search.add_argument('-s', dest='search', choices=['google','bing','duckduckgo','all'], default='all', help='Search engine(s) to scrape')
         search.add_argument('-m', dest='max_results', type=int, default=50, help='Max results per file type, per search engine (Default: 50)')
         search.add_argument('-j', dest='jitter', type=int, default=2, help='Seconds between search requests (Default: 2)')
 
