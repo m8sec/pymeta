@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Author: m8r0wn
 
 import re
 import os

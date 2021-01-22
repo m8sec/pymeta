@@ -8,13 +8,10 @@ Pymeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/
 Pymeta can also be pointed at a directory to extract metadata from files manually downloaded using the ```-dir``` command line argument. See the [Usage](#Usage), or [All Options](#All-Options) section for more information. 
 
 
-## Install
-* PyPi (last release)
-```
-pip3 install pymetadata
-```
+## Getting Started
+PyMeta was initially created for Debian based Linux distributions, such as Kali Linux or Ubuntu. Perl is required for metadata extraction via the included exiftool binary.
 
-* GitHub (latest code)
+#### Install:
 ```
 git clone https://github.com/m8r0wn/pymeta
 cd pymeta
@@ -48,4 +45,4 @@ Output Options:
     
 ## Credit
 - Beau Bullock [(@dafthack)](https://twitter.com/dafthack) - [https://github.com/dafthack/PowerMeta](https://github.com/dafthack/PowerMeta)
-- Phil Harvey - [https://sno.phy.queensu.ca/~phil/exiftool/](https://sno.phy.queensu.ca/~phil/exiftool/)
+- Phil Harvey - [https://exiftool.org/](https://exiftool.org/)
