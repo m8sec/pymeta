@@ -9,7 +9,7 @@ Pymeta can also be pointed at a directory to extract metadata from files manuall
 
 
 ## Getting Started
-PyMeta was initially created for Debian based Linux distributions, such as Kali Linux or Ubuntu. Perl is required for metadata extraction via the included exiftool binary.
+PyMeta was created for and tested on Debian based Linux distributions, such as *Kali Linux* or *Ubuntu*. However, it may be applicable to other platforms. Perl is required for metadata extraction via the included exiftool binary.
 
 #### Install:
 ```
