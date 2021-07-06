@@ -46,6 +46,7 @@ class PyMeta():
                 # Captcha check on first pass of every Google search
                 if search =='google' and link_count <= -1:
                     if self.detection_check(resp):
+                        print("[!] EXIT")
                         exit
 
                 for link in soup.findAll('a'):
