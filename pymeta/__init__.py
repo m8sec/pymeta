@@ -94,7 +94,7 @@ class PyMeta():
     def download_files(self, links, write_dir):
         for link in links:
             try:
-                sleep(self.jitter)
+                sleep(5)
                 requests.packages.urllib3.disable_warnings()
                 response = requests.get(link, headers={'User-Agent': choice(self.__user_agents)}, verify=False, timeout=6)
                 with open(write_dir + link.split("/")[-1], 'wb') as f:
