@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# Author: m8r0wn
 
 import re
 import os
@@ -39,6 +38,7 @@ class PyMeta():
             tmp        = len(self.links)
             search_url = self.__urls[search].format(domain, ext, str(link_count + 1))
             try:
+                sleep(self.jitter)
                 headers    = {'User-Agent' : choice(self.__user_agents)}
                 resp       = requests.get(search_url, headers=headers, verify=False, timeout=5)
                 soup       = BeautifulSoup(resp.content, 'html.parser')
@@ -46,8 +46,7 @@ class PyMeta():
                 # Captcha check on first pass of every Google search
                 if search =='google' and link_count <= -1:
                     if self.detection_check(resp):
-                        sleep(self.jitter)
-                        return
+                        exit
 
                 for link in soup.findAll('a'):
                     if total_links >= search_cap:
@@ -77,6 +76,7 @@ class PyMeta():
                 if self.debug: print("[**] Web Search Error: {}".format(str(e)))
 
     def detection_check(self, resp):
+        sleep(self.jitter)
         if "you may be asked to solve the CAPTCHA" in resp.text and self.detection <= 1:
             self.detection += 1
             self.jitter = self.jitter + 5
@@ -94,6 +94,7 @@ class PyMeta():
     def download_files(self, links, write_dir):
         for link in links:
             try:
+                sleep(self.jitter)
                 requests.packages.urllib3.disable_warnings()
                 response = requests.get(link, headers={'User-Agent': choice(self.__user_agents)}, verify=False, timeout=6)
                 with open(write_dir + link.split("/")[-1], 'wb') as f:
