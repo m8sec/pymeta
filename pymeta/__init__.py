@@ -47,7 +47,7 @@ class PyMeta():
                 if search =='google' and link_count <= -1:
                     if self.detection_check(resp):
                         print("[!] EXIT")
-                        exit
+                        exit(0)
 
                 for link in soup.findAll('a'):
                     if total_links >= search_cap:
