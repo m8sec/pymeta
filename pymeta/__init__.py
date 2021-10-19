@@ -11,22 +11,21 @@ from random import choice
 from time import strftime
 from bs4 import BeautifulSoup
 from subprocess import getoutput
+from taser.proto.http import random_agent
 from urllib3 import disable_warnings, exceptions
 disable_warnings(exceptions.InsecureRequestWarning)
 
 class PyMeta():
     def __init__(self, jitter, debug=False):
         self.__real_path   = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-        self.__exiftool    = '{}/resources/exiftool'.format(self.__real_path)
-        self.__user_agents = [line.strip() for line in open('{}/resources/user_agents.txt'.format(self.__real_path))]
         self.__urls        = {'google': 'https://www.google.com/search?q=site:{}+filetype:{}&num=100&start={}',
                               'bing'  : 'http://www.bing.com/search?q=site:{}%20filetype:{}&first={}'}
 
         self.file_types = ['pdf', 'xls', 'xlsx', 'csv', 'doc', 'docx', 'ppt', 'pptx']
+        self.captchad   = False
         self.running    = True
         self.debug      = debug
         self.links      = []
-        self.detection  = 0
         self.jitter     = jitter
 
     def web_search(self, search, domain, ext, search_cap):
@@ -39,14 +38,13 @@ class PyMeta():
             tmp        = len(self.links)
             search_url = self.__urls[search].format(domain, ext, str(link_count + 1))
             try:
-                headers    = {'User-Agent' : choice(self.__user_agents)}
+                headers    = {'User-Agent' : random_agent()}
                 resp       = requests.get(search_url, headers=headers, verify=False, timeout=5)
                 soup       = BeautifulSoup(resp.content, 'html.parser')
 
                 # Captcha check on first pass of every Google search
                 if search =='google' and link_count <= -1:
-                    if self.detection_check(resp):
-                        sleep(self.jitter)
+                    if self.detection_check(resp, search):
                         return
 
                 for link in soup.findAll('a'):
@@ -76,26 +74,20 @@ class PyMeta():
             except Exception as e:
                 if self.debug: print("[**] Web Search Error: {}".format(str(e)))
 
-    def detection_check(self, resp):
-        if "you may be asked to solve the CAPTCHA" in resp.text and self.detection <= 1:
-            self.detection += 1
-            self.jitter = self.jitter + 5
-            print("[!] Captcha'ed: Increasing jitter to {}".format(self.jitter))
+    def detection_check(self, resp, search):
+        if self.captchad:
             return True
-        elif "you may be asked to solve the CAPTCHA" in resp.text and self.detection >= 2:
-            print("[!] Captcha'ed: Change source IP's or come back later...")
-            if len(self.links) > 0:
-                self.running = False
-                return True
-            else:
-                exit(0)
+        elif "you may be asked to solve the CAPTCHA" in resp.text:
+            print("[!] Captcha'ed by {}: Skipping this source...".format(search))
+            self.captchad = True
+            return True
         return False
 
     def download_files(self, links, write_dir):
         for link in links:
             try:
                 requests.packages.urllib3.disable_warnings()
-                response = requests.get(link, headers={'User-Agent': choice(self.__user_agents)}, verify=False, timeout=6)
+                response = requests.get(link, headers={'User-Agent': choice(random_agent())}, verify=False, timeout=6)
                 with open(write_dir + link.split("/")[-1], 'wb') as f:
                     f.write(response.content)
             except KeyboardInterrupt:
@@ -105,7 +97,7 @@ class PyMeta():
                 pass
 
     def create_csv(self, file_dir, output_file):
-        cmd = "perl {} -csv {}* > {}".format(self.__exiftool,file_dir,  output_file)
+        cmd = "exiftool -csv -r {} > {}".format(file_dir,  output_file)
         resp = getoutput(cmd)
         if self.links:
             print("[*] Adding source URL's to the report")
@@ -138,6 +130,13 @@ class PyMeta():
 def timestamp():
     return strftime('%d-%m-%y_%H_%M')
 
+def exif_check():
+    try:
+        float(getoutput('exiftool -ver'))
+        return True
+    except:
+        return False
+
 ######################################
 # File Handling & Verification
 ######################################
@@ -161,8 +160,8 @@ def validate_dir(path):
 
 def create_reportFile(filename, domain):
     '''
-    Take in -dir or -d value and return a valid report name
-    that wont overwrite or append an existing file/report
+    Take in argparse data and return a valid report name
+    that wont overwrite or append an existing report.
     '''
     chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
@@ -237,7 +236,7 @@ def launcher(args):
 
 def main():
     try:
-        version = '1.0.4'
+        version = '1.1.0'
         args = argparse.ArgumentParser(description="""
             PyMeta v.{}
    -----------------------------------
@@ -265,7 +264,10 @@ usage:
         output.add_argument('--debug', dest='debug', action='store_true', help='Show links as they are collected during scraping')
 
         args = args.parse_args()
-        launcher(args)
+        if exif_check():
+            launcher(args)
+        else:
+            print('[!] Exiftool not found on the system. Please install and try again.\n')
     except KeyboardInterrupt:
         print("\n[!] Keyboard Interrupt Caught...\n\n")
         exit(0)

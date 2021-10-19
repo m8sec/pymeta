@@ -1,17 +1,31 @@
-# pymeta
-![](https://img.shields.io/badge/Python-3.6+-blue.svg)&nbsp;&nbsp;
-![](https://img.shields.io/badge/License-GPL%203.0-green.svg)
+# PyMeta
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3.6+-blue.svg"/>&nbsp;
+  <img src="https://img.shields.io/badge/License-GPL%203.0-green.svg"/>&nbsp;
+  <a href="https://www.twitter.com/m8r0wn">
+      <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue?style=plastic&logo=twitter"/>
+  </a>&nbsp;
+  <a href="https://github.com/sponsors/m8r0wn">
+      <img src="https://img.shields.io/badge/Sponsor-GitHub-red?style=plastic&logo=github"/>
+  </a>
+</p>
+
+PyMeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specially crafted search queries to identify and download the following file types (**pdf, xls, xlsx, csv, doc, docx, ppt, pptx**) from a given domain using Google and Bing scraping.
+
+Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/) and added to a ```.csv``` report.  Alternatively, Pymeta can be pointed at a directory to extract metadata from files manually downloaded using the ```-dir``` command line argument. See the [Usage](#Usage), or [All Options](#All-Options) section for more information.
+
+*Metadata is a common place for penetration testers and red teamers to find: domains, user accounts, naming conventions, software/version numbers, and more!*
 
 
-Pymeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specially crafted search queries to identify and download the following file types (pdf, xls, xlsx, csv, doc, docx, ppt, pptx) from a given domain using Google and Bing scraping. Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/) and added to a ```.csv``` report. Metadata is a common place for penetration testers to find internal domain names, usernames, software/version numbers, and help identify an organization's naming convention.
+# Getting Started
+### Prerequisites
+[Exiftool](https://sno.phy.queensu.ca/~phil/exiftool/) is required and can be installed with:
 
-Pymeta can also be pointed at a directory to extract metadata from files manually downloaded using the ```-dir``` command line argument. See the [Usage](#Usage), or [All Options](#All-Options) section for more information. 
+&nbsp;&nbsp;&nbsp;&nbsp;**Ubuntu/Kali** - ```apt-get install exiftool -y```
 
+&nbsp;&nbsp;&nbsp;&nbsp;**Mac OS** - ```brew install exiftool```
 
-## Getting Started
-PyMeta was created for and tested on Debian based Linux distributions, such as *Kali Linux* or *Ubuntu*. However, it may be applicable to other platforms. Perl is required for metadata extraction via the included exiftool binary.
-
-#### Install:
+### Install:
 ```
 git clone https://github.com/m8r0wn/pymeta
 cd pymeta
