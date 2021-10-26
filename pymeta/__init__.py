@@ -50,6 +50,7 @@ class PyMeta():
                 for link in soup.findAll('a'):
                     if total_links >= search_cap:
                         print("[*] {:<4}:{:>3} {}".format(ext, (len(self.links) - tmp), search_url))
+                        sleep(self.jitter)
                         return
                     else:
                         try:
@@ -87,7 +88,7 @@ class PyMeta():
         for link in links:
             try:
                 requests.packages.urllib3.disable_warnings()
-                response = requests.get(link, headers={'User-Agent': choice(random_agent())}, verify=False, timeout=6)
+                response = requests.get(link, headers={'User-Agent': random_agent()}, verify=False, timeout=6)
                 with open(write_dir + link.split("/")[-1], 'wb') as f:
                     f.write(response.content)
             except KeyboardInterrupt:
