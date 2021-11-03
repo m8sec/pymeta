@@ -14,8 +14,10 @@ PyMeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/
 
 Once downloaded, metadata is extracted from these files using Phil Harvey's [exiftool](https://sno.phy.queensu.ca/~phil/exiftool/) and added to a ```.csv``` report.  Alternatively, Pymeta can be pointed at a directory to extract metadata from files manually downloaded using the ```-dir``` command line argument. See the [Usage](#Usage), or [All Options](#All-Options) section for more information.
 
-*Metadata is a common place for penetration testers and red teamers to find: domains, user accounts, naming conventions, software/version numbers, and more!*
+#### Why?
+Metadata is a common place for penetration testers and red teamers to find: domains, user accounts, naming conventions, software/version numbers, and more!
 
+*Still not convinced? Checkout -* **[Hacking Organizations One Document at a Time With Metadata](https://infosecwriteups.com/hacking-organizations-one-document-at-a-time-with-metadata-1af2eb10f254)**
 
 # Getting Started
 ### Prerequisites
