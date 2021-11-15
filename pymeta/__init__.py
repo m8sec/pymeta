@@ -89,7 +89,7 @@ class PyMeta():
             try:
                 requests.packages.urllib3.disable_warnings()
                 response = requests.get(link, headers={'User-Agent': random_agent()}, verify=False, timeout=6)
-                with open(write_dir + link.split("/")[-1], 'wb') as f:
+                with open(write_dir + link.split("/")[-1].split("?")[0], 'wb') as f:
                     f.write(response.content)
             except KeyboardInterrupt:
                 print("\n[!] Keyboard Interrupt Caught...\n\n")
