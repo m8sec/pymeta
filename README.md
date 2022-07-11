@@ -2,10 +2,10 @@
 <p align="left">
   <img src="https://img.shields.io/badge/Python-3.6+-blue.svg"/>&nbsp;
   <img src="https://img.shields.io/badge/License-GPL%203.0-green.svg"/>&nbsp;
-  <a href="https://www.twitter.com/m8r0wn">
-      <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue?style=plastic&logo=twitter"/>
+  <a href="https://www.twitter.com/m8sec">
+      <img src="https://img.shields.io/badge/Twitter-@m8sec-blue?style=plastic&logo=twitter"/>
   </a>&nbsp;
-  <a href="https://github.com/sponsors/m8r0wn">
+  <a href="https://github.com/sponsors/m8sec">
       <img src="https://img.shields.io/badge/Sponsor-GitHub-red?style=plastic&logo=github"/>
   </a>
 </p>
@@ -29,7 +29,7 @@ Metadata is a common place for penetration testers and red teamers to find: doma
 
 ### Install:
 ```
-git clone https://github.com/m8r0wn/pymeta
+git clone https://github.com/m8sec/pymeta
 cd pymeta
 python3 setup.py install
 ```
