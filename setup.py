@@ -18,8 +18,7 @@ setup(
     package_data={'pymeta': ['resources/*']},
     install_requires=[
         'bs4',
-        'requests',
-        'taser'
+        'requests'
     ],
     classifiers = [
         "Environment :: Console",
