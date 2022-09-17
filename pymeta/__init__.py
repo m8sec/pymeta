@@ -11,7 +11,6 @@ from random import choice
 from time import strftime
 from bs4 import BeautifulSoup
 from subprocess import getoutput
-from taser.proto.http import random_agent
 from urllib3 import disable_warnings, exceptions
 disable_warnings(exceptions.InsecureRequestWarning)
 
@@ -38,7 +37,7 @@ class PyMeta():
             tmp        = len(self.links)
             search_url = self.__urls[search].format(domain, ext, str(link_count + 1))
             try:
-                headers    = {'User-Agent' : random_agent()}
+                headers    = {'User-Agent' : get_agent()}
                 resp       = requests.get(search_url, headers=headers, verify=False, timeout=5)
                 soup       = BeautifulSoup(resp.content, 'html.parser')
 
@@ -88,7 +87,7 @@ class PyMeta():
         for link in links:
             try:
                 requests.packages.urllib3.disable_warnings()
-                response = requests.get(link, headers={'User-Agent': random_agent()}, verify=False, timeout=6)
+                response = requests.get(link, headers={'User-Agent': get_agent()}, verify=False, timeout=6)
                 with open(write_dir + link.split("/")[-1], 'wb') as f:
                     f.write(response.content)
             except KeyboardInterrupt:
@@ -137,6 +136,16 @@ def exif_check():
         return True
     except:
         return False
+  
+ def get_agent():
+    return choice([
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 12.5; rv:104.0) Gecko/20100101 Firefox/104.0',
+        'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_5_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0'
+    ])
 
 ######################################
 # File Handling & Verification
