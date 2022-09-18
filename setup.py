@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='pymetadata',
+    name='pymetasec',
     version='1.1.1',
     author = 'm8sec',
     description = 'Web scraper to download and extract file metadata',
@@ -27,6 +27,6 @@ setup(
         "Topic :: Security"
     ],
     entry_points= {
-        'console_scripts': ['pymeta=pymeta:main', 'pymetadata=pymeta:main']
+        'console_scripts': ['pymeta=pymeta:main', 'pymetasec=pymeta:main']
     }
 )
