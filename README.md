@@ -57,11 +57,9 @@ options:
   -j JITTER             Jitter between requests (Default=1)
 
 Search Options:
-  -s ENGINE, --search ENGINE
-                        Search Engine (Default='google,bing')
-  --file-type FILE_TYPE
-                        File types to search
-  -m MAX_RESULTS        Max results per type search
+  -s ENGINE, --search ENGINE    Search Engine (Default='google,bing')
+  --file-type FILE_TYPE         File types to search (default=pdf,xls,xlsx,csv,doc,docx,ppt,pptx)
+  -m MAX_RESULTS                Max results per type search
 
 Proxy Options:
   --proxy PROXY         Proxy requests (IP:Port)
