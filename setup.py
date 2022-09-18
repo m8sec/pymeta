@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='pymetasec',
-    version='1.1.1',
+    version='1.2.0',
     author= 'm8sec',
     long_description=long_description,
     long_description_content_type="text/markdown",
