@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Author: m8r0wn
+# Author: m8sec
 
 import re
 import os
@@ -246,7 +246,7 @@ def launcher(args):
 
 def main():
     try:
-        version = '1.1.0'
+        version = '1.1.1'
         args = argparse.ArgumentParser(description="""
             PyMeta v.{}
    -----------------------------------
