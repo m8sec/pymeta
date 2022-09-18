@@ -17,7 +17,6 @@ Once downloaded, metadata is extracted from these files using Phil Harvey's [exi
 #### Why?
 Metadata is a common place for penetration testers and red teamers to find: domains, user accounts, naming conventions, software/version numbers, and more!
 
-*Still not convinced? Checkout -* **[Hacking Organizations One Document at a Time With Metadata](https://infosecwriteups.com/hacking-organizations-one-document-at-a-time-with-metadata-1af2eb10f254)**
 
 # Getting Started
 ### Prerequisites
