@@ -28,6 +28,12 @@ Metadata is a common place for penetration testers and red teamers to find: doma
 &nbsp;&nbsp;&nbsp;&nbsp;**Mac OS** - ```brew install exiftool```
 
 ### Install:
+Install the last stable release from PyPi:
+```commandline
+pip3 install pymetasec
+```
+
+Or, install the most recent code from GitHub:
 ```
 git clone https://github.com/m8sec/pymeta
 cd pymeta
@@ -44,19 +50,30 @@ python3 setup.py install
 
 ## All Options
 ```
-Target Options:
-  -d DOMAIN             Target domain
-  -dir FILE_DIR         Pre-existing directory of files
+options:
+  -h, --help            show this help message and exit
+  -T MAX_THREADS        Max threads for file download (Default=5)
+  -t TIMEOUT            Max timeout per search (Default=8)
+  -j JITTER             Jitter between requests (Default=1)
 
 Search Options:
-  -s {google,bing,all}  Search engine(s) to scrape (Default: all)
-  -m MAX_RESULTS        Max results per file type, per search engine (Default: 50)
-  -j JITTER             Seconds between search requests (Default: 2)
+  -s ENGINE, --search ENGINE
+                        Search Engine (Default='google,bing')
+  --file-type FILE_TYPE
+                        File types to search
+  -m MAX_RESULTS        Max results per type search
+
+Proxy Options:
+  --proxy PROXY         Proxy requests (IP:Port)
+  --proxy-file PROXY    Load proxies from file for rotation
 
 Output Options:
-  -o OUTPUT_DIR         Path to store PyMeta's download folder (Default: ./)
-  -f FILENAME           Custom report path/name.csv (Optional)
-  --debug               Show links as they are collected during scraping
+  -o DWNLD_DIR          Path to create downloads directory (Default: ./)
+  -f REPORT_FILE        Custom report name ("pymeta_report.csv")
+
+Target Options:
+  -d DOMAIN             Target domain
+  -dir FILE_DIR         Pre-existing directory of file
 ```
     
 ## Credit

@@ -1,274 +1,145 @@
 #!/usr/bin/env python3
-# Author: m8r0wn
+# Author: @m8sec
+# License: GPLv3
 
-import re
 import os
+import threading
 import argparse
-import requests
 from sys import exit
 from time import sleep
-from random import choice
-from time import strftime
-from bs4 import BeautifulSoup
+from pymeta import exif
+from pymeta import utils
+from pymeta.logger import *
 from subprocess import getoutput
-from taser.proto.http import random_agent
-from urllib3 import disable_warnings, exceptions
-disable_warnings(exceptions.InsecureRequestWarning)
+from pymeta.search import PyMeta, download_file
 
-class PyMeta():
-    def __init__(self, jitter, debug=False):
-        self.__real_path   = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-        self.__urls        = {'google': 'https://www.google.com/search?q=site:{}+filetype:{}&num=100&start={}',
-                              'bing'  : 'http://www.bing.com/search?q=site:{}%20filetype:{}&first={}'}
 
-        self.file_types = ['pdf', 'xls', 'xlsx', 'csv', 'doc', 'docx', 'ppt', 'pptx']
-        self.captchad   = False
-        self.running    = True
-        self.debug      = debug
-        self.links      = []
-        self.jitter     = jitter
+def status(args):
 
-    def web_search(self, search, domain, ext, search_cap):
-        http        = re.compile("http([^\)]+){}([^\)]+)\.{}".format(domain, ext))
-        https       = re.compile("https([^\)]+){}([^\)]+)\.{}".format(domain, ext))
-        link_count  = -1  # Count used to increment results in search URL
-        total_links = 0   # Ensure search doesnt exceed maximum
+    VERSION = 'v1.2.0'
 
-        while self.running:
-            tmp        = len(self.links)
-            search_url = self.__urls[search].format(domain, ext, str(link_count + 1))
-            try:
-                headers    = {'User-Agent' : random_agent()}
-                resp       = requests.get(search_url, headers=headers, verify=False, timeout=5)
-                soup       = BeautifulSoup(resp.content, 'html.parser')
+    print("\nPyMeta {} - {}\n".format(VERSION, highlight("by @m8sec", "bold", "gray")))
 
-                # Captcha check on first pass of every Google search
-                if search =='google' and link_count <= -1:
-                    if self.detection_check(resp, search):
-                        return
+    if args.file_dir:
+        return
 
-                for link in soup.findAll('a'):
-                    if total_links >= search_cap:
-                        print("[*] {:<4}:{:>3} {}".format(ext, (len(self.links) - tmp), search_url))
-                        sleep(self.jitter)
-                        return
-                    else:
-                        try:
-                            link = str(link.get('href')).strip()
-                            if search not in link.lower():
-                                link_count += 1
-                                if http.match(link) or https.match(link):
-                                    if link not in self.links:
-                                        self.links.append(link)
-                                        total_links += 1
-                                        if self.debug: print("[++] Found: {}".format(link))
-                        except Exception as e:
-                            if self.debug: print("[**] Link Parser Error: {}".format(str(e)))
+    Log.info("Target Domain     : {}".format(highlight(args.domain if args.domain else args.file_dir, "bold", "gray"), ))
+    Log.info("Search Engines(s) : {}".format(highlight(', '.join(args.engine), "bold", "gray")))
+    Log.info("File Types(s)     : {}".format(highlight(', '.join(args.file_type), "bold", "gray"), ))
+    Log.info("Max Downloads     : {}\n".format(highlight(args.max_results, "bold", "gray")))
 
-                print("[*] {:<4}:{:>3} {}".format(ext, (len(self.links)-tmp), search_url))
-                if (len(self.links)-tmp) == 0:
-                    return
-                sleep(self.jitter)
-            except KeyboardInterrupt:
-                print("[!] Key event detected")
-                exit(0)
-            except Exception as e:
-                if self.debug: print("[**] Web Search Error: {}".format(str(e)))
 
-    def detection_check(self, resp, search):
-        if self.captchad:
-            return True
-        elif "you may be asked to solve the CAPTCHA" in resp.text:
-            print("[!] Captcha'ed by {}: Skipping this source...".format(search))
-            self.captchad = True
-            return True
-        return False
+def cli():
+    args = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
+    args.add_argument('--debug', dest="debug", action='store_true', help=argparse.SUPPRESS)
+    args.add_argument('-T', dest='max_threads', type=int, default=5, help='Max threads for file download (Default=5)')
+    args.add_argument('-t', dest='timeout', type=float, default=8, help='Max timeout per search (Default=8)')
+    args.add_argument('-j', dest='jitter', type=float, default=1, help='Jitter between requests (Default=1)')
 
-    def download_files(self, links, write_dir):
-        for link in links:
-            try:
-                requests.packages.urllib3.disable_warnings()
-                response = requests.get(link, headers={'User-Agent': random_agent()}, verify=False, timeout=6)
-                with open(write_dir + link.split("/")[-1], 'wb') as f:
-                    f.write(response.content)
-            except KeyboardInterrupt:
-                print("\n[!] Keyboard Interrupt Caught...\n\n")
-                exit(0)
-            except:
-                pass
+    search = args.add_argument_group("Search Options")
+    search.add_argument('-s', '--search', dest='engine', default='google,bing', type=lambda x: utils.delimiter2list(x), help='Search Engine (Default=\'google,bing\')')
+    search.add_argument('--file-type', default='pdf,xls,xlsx,csv,doc,docx,ppt,pptx', type=lambda x: utils.delimiter2list(x), help='File types to search')
+    search.add_argument('-m', dest='max_results', type=int, default=50, help='Max results per type search')
 
-    def create_csv(self, file_dir, output_file):
-        cmd = "exiftool -csv -r {} > {}".format(file_dir,  output_file)
-        resp = getoutput(cmd)
-        if self.links:
-            print("[*] Adding source URL's to the report")
-            self.insert_sourceUrl(output_file)
+    p = args.add_argument_group("Proxy Options")
+    pr = p.add_mutually_exclusive_group(required=False)
+    pr.add_argument('--proxy', dest='proxy', action='append', default=[], help='Proxy requests (IP:Port)')
+    pr.add_argument('--proxy-file', dest='proxy', default=False, type=lambda x: utils.file_exists(x), help='Load proxies from file for rotation')
 
-    def insert_sourceUrl(self, output_file):
-        tmp = '.pymeta_tmp.csv'
-        with open(output_file, 'r', encoding="ISO-8859-1") as in_csv, open(tmp, 'w') as out_csv:
-            for row in in_csv:
-                try:
-                    filename = self.url_match(row.split(',')[0])
-                    out_csv.write("{},{}".format(filename, row))
-                except:
-                    pass
-        os.remove(output_file)
-        os.rename(tmp, output_file)
+    output = args.add_argument_group("Output Options")
+    output.add_argument('-o', dest="dwnld_dir", type=lambda x: utils.dir_exists(x), default="./", help="Path to create downloads directory (Default: ./)")
+    output.add_argument('-f', dest="report_file", type=str, default="pymeta_report.csv", help="Custom report name (\"pymeta_report.csv\")")
 
-    def url_match(self, filename):
-        if filename == "SourceFile":
-            return "SourceURL"
-        for url in self.links:
-            # Split to account for custom dir paths
-            if filename.split("/")[-1] in url:
-                return url
-        return "n/a"
+    target = args.add_argument_group("Target Options")
+    action = target.add_mutually_exclusive_group(required=True)
+    action.add_argument('-d', dest='domain', type=str, default=False, help='Target domain')
+    action.add_argument('-dir', dest="file_dir", type=lambda x: utils.dir_exists(x), default=False, help="Pre-existing directory of files")
+    return args.parse_args()
+    
 
-######################################
-# Misc Functions
-######################################
-def timestamp():
-    return strftime('%d-%m-%y_%H_%M')
+def start_scrape(args):
+    tmp = []
+    Log.info('Searching {} for {} file type(s) on "{}"'.format(', '.join(args.engine), len(args.file_type), args.domain))
 
-def exif_check():
-    try:
-        float(getoutput('exiftool -ver'))
-        return True
-    except:
-        return False
+    for file_type in args.file_type:
+        for search_engine in args.engine:
+            pym = PyMeta(search_engine, args.domain, file_type, args.timeout, 3, args.proxy, args.jitter, args.max_results)
+            if search_engine in pym.url.keys():
+                tmp += pym.search()
+                tmp = list(set(tmp))
 
-######################################
-# File Handling & Verification
-######################################
-def create_outDir(out_dir, domain, base="_meta"):
-    # Create DIR to download office files to
-    out_dir = validate_dir(out_dir)
-    write_dir = os.path.join(out_dir, '{}{}'.format(domain[0:4], base))
-    write_dir = dedup_fileName(write_dir, ext="/")
-    os.mkdir(write_dir)
-    return write_dir
+    dwnld_dir = download_results(args, tmp)
+    extract_exif(dwnld_dir, args.report_file, tmp)
+    return tmp
 
-def validate_dir(path):
-    if path.endswith("/"):
-        path = path[:-1]
 
-    if not os.path.isdir(path):
-        print("\n[-] Directory not found: {}\n".format(path))
-        exit(1)
-    else:
-        return path
-
-def create_reportFile(filename, domain):
-    '''
-    Take in argparse data and return a valid report name
-    that wont overwrite or append an existing report.
-    '''
-    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-
-    if filename:
-        report_name = filename
-        report_name = dedup_fileName(report_name)
-    else:
-        tmp = ''
-        for x in domain:
-            if x in chars:
-                tmp += x
-            if len(tmp) >= 4:
-                break
-
-        if not tmp:
-            tmp = timestamp()
-
-        report_name = "{}_meta".format(tmp)
-        report_name = dedup_fileName(report_name, ext='.csv')
-    return report_name
-
-def dedup_fileName(file, ext=''):
-    count = 2
-    tmp = file
-    if os.path.exists(file+ext):
-        while os.path.exists(file+ext):
-            file = '{}{}'.format(tmp, str(count))
-            count += 1
-    return file+ext
-
-######################################
-# Primary Handlers
-######################################
-def domain_handler(pymeta, output_dir, filename, search, max_results, domain):
-    print("\n[*] Starting PyMeta web scraper")
-    print("[*] Extension  |  Number of New Files Found  |  Search URL")
-
-    for ext in pymeta.file_types:
-        if search in ['google', 'all']:
-            pymeta.web_search('google', domain, ext, max_results)
-        if search in ['bing', 'all']:
-            pymeta.web_search('bing', domain, ext, max_results)
-
-    if len(pymeta.links) == 0:
-        print("[-] No Results found, check search engine for captchas and manually inspect inputs\n")
+def download_results(args, urls):
+    if len(urls) == 0:
+        Log.warn('No results found, closing...')
         exit(0)
 
-    # Dont create output dir & file until results found
-    output_dir  = create_outDir(output_dir, domain)
-    report_file = create_reportFile(filename, domain)
+    dwnld_dir = utils.create_out_dir(args.dwnld_dir, args.domain)
+    Log.info("Setting up downloads folder at {}".format(dwnld_dir))
 
-    print("[*] Downloading {} files to: {}".format(str(len(pymeta.links)), output_dir))
-    pymeta.download_files(pymeta.links, output_dir)
-    dir_handler(pymeta, output_dir, report_file)
+    Log.info("Downloading ({}) unique files".format(len(urls)))
+    if len(urls) > 9: Log.info('This may take a minute...')
 
-def dir_handler(pymeta, input_dir, report_file):
-    print("[*] Extracting Metadata...".format(input_dir))
-    pymeta.create_csv(input_dir, report_file)
-    print("[+] Report complete: {}".format(report_file))
+    active_th = []
+    for url in urls:
+        th = threading.Thread(target=download_file, args=(url, dwnld_dir))
+        th. daemon = True
+        th.start()
+        active_th.append(th)
+        sleep(args.jitter)
 
-######################################
-# Main
-######################################
-def launcher(args):
-    pymeta = PyMeta(args.jitter, args.debug)
+        while threading.activeCount() > args.max_threads:
+            sleep(0.05)
 
-    if args.domain:
-        domain_handler(pymeta, args.output_dir, args.filename, args.search, args.max_results, args.domain)
-    else:
-        report_file = create_reportFile(args.filename, args.file_dir)
-        dir_handler(pymeta, args.file_dir, report_file)
+        for th in active_th:
+            if not th.is_alive():
+                active_th.remove(th)
+
+    while len(active_th) > 0:
+        for th in active_th:
+            if not th.is_alive():
+                active_th.remove(th)
+        sleep(0.05)
+
+    return dwnld_dir
+
+
+def extract_exif(file_dir, output_file, urls=[]):
+    if len(os.listdir(file_dir)) == 0:
+        Log.warn('No files found at {}, closing...'.format(file_dir))
+        os.rmdir(file_dir)
+        exit(0)
+
+    Log.info("Extracting metadata from {}".format(file_dir))
+    report_file = utils.check_rename_file(output_file, file_dir)
+
+    cmd = "exiftool -csv -r {} > {}".format(file_dir, report_file)
+    logging.debug('Executing: "{}"'.format(cmd))
+    getoutput(cmd)
+
+    if len(urls) > 0:
+        Log.info("Adding source URL's in report\n")
+        exif.report_source_url(urls, report_file)
+
+    Log.success("Report complete: {}".format(report_file))
+
 
 def main():
     try:
-        version = '1.1.0'
-        args = argparse.ArgumentParser(description="""
-            PyMeta v.{}
-   -----------------------------------
-Search the web for files on the targeted domain
-and extract metadata.
+        args = cli()
+        status(args)
+        exif.exif_check()
 
-usage:
-    pymeta -d example.com -s all -csv
-    pymeta -d example.org -s bing
-    pymeta -dir my_files/""".format(version), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
-
-        target = args.add_argument_group("Target Options")
-        action = target.add_mutually_exclusive_group(required=True)
-        action.add_argument('-d', dest='domain', type=str, default=False, help='Target domain')
-        action.add_argument('-dir', dest="file_dir", type=lambda x: validate_dir(x), default=False, help="Pre-existing directory of files")
-
-        search = args.add_argument_group("Search Options")
-        search.add_argument('-s', dest='search', choices=['google','bing','all'], default='all', help='Search engine(s) to scrape')
-        search.add_argument('-m', dest='max_results', type=int, default=50, help='Max results per file type, per search engine (Default: 50)')
-        search.add_argument('-j', dest='jitter', type=int, default=2, help='Seconds between search requests (Default: 2)')
-
-        output = args.add_argument_group("Output Options")
-        output.add_argument('-o', dest="output_dir", type=str, help="Path to store PyMeta's download folder (Default: ./)", default="./")
-        output.add_argument('-f', dest="filename", type=str, default='', help="Custom report path/name.csv")
-        output.add_argument('--debug', dest='debug', action='store_true', help='Show links as they are collected during scraping')
-
-        args = args.parse_args()
-        if exif_check():
-            launcher(args)
-        else:
-            print('[!] Exiftool not found on the system. Please install and try again.\n')
+        if args.debug: setup_debug_logger(); debug_args(args)
+        extract_exif(args.file_dir, args.report_file) if args.file_dir else start_scrape(args)
     except KeyboardInterrupt:
-        print("\n[!] Keyboard Interrupt Caught...\n\n")
+        Log.warn("Key event detected, closing...")
         exit(0)
+
+
+if __name__ == '__main__':
+    main()
