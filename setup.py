@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='pymetadata',
-    version='1.1.0',
+    version='1.1.1',
     author = 'm8sec',
     description = 'Web scraper to download and extract file metadata',
     long_description=long_description,
