@@ -1,14 +1,11 @@
 # PyMeta
 <p align="left">
-  <img src="https://img.shields.io/badge/Python-3.6+-blue.svg"/>&nbsp;
   <img src="https://img.shields.io/badge/License-GPL%203.0-green.svg"/>&nbsp;
   <a href="https://www.twitter.com/m8sec">
-      <img src="https://img.shields.io/badge/Twitter-@m8sec-blue?style=plastic&logo=twitter"/>
-  </a>&nbsp;
-  <a href="https://github.com/sponsors/m8sec">
-      <img src="https://img.shields.io/badge/Sponsor-GitHub-red?style=plastic&logo=github"/>
-  </a>
-</p>
+        <img src="https://img.shields.io/badge/Twitter-@m8sec-gray?logo=twitter"/>
+    </a>&nbsp;
+    <img src="https://img.shields.io/badge/python-3.6%20|%203.7%20|%203.8%20|%203.9%20-blue.svg"/>&nbsp;
+ </p>
 
 PyMeta is a Python3 rewrite of the tool [PowerMeta](https://github.com/dafthack/PowerMeta), created by [dafthack](https://twitter.com/dafthack) in PowerShell. It uses specially crafted search queries to identify and download the following file types (**pdf, xls, xlsx, csv, doc, docx, ppt, pptx**) from a given domain using Google and Bing scraping.
 
