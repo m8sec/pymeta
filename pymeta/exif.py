@@ -2,6 +2,7 @@ import os
 import logging
 from pymeta.logger import Log
 from subprocess import getoutput
+from shutil import move
 
 
 def exif_check():
@@ -25,7 +26,7 @@ def report_source_url(urls, output_file):
                 logging.debug('URL ReParsing Error: {} = {}'.format(r, e))
 
     os.remove(output_file)
-    os.rename('.pymeta_tmp.csv', output_file)
+    move('.pymeta_tmp.csv', output_file)
 
 
 def url_match(urls, filename):
