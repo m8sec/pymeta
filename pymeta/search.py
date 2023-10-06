@@ -121,7 +121,7 @@ def get_proxy(proxies):
 def download_file(url, dwnld_dir, timeout=6):
     try:
         logging.debug('Downloading: {}'.format(url))
-        response = requests.get(url, headers={'User-Agent': get_agent()}, verify=False, timeout=timeout)
+        response = requests.get(url, headers={'User-Agent':get_agent()}, verify=False, timeout=timeout)
         http_code = get_statuscode(response)
 
         if http_code != 200:
@@ -186,6 +186,5 @@ def get_agent():
         '''Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0''',
         '''Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko''',
         '''Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36''',
-        '''Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36''',
-    ])
+        '''Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'''])
 
