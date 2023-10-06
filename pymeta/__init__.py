@@ -33,8 +33,8 @@ def cli():
     args = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
     args.add_argument('--debug', dest="debug", action='store_true', help=argparse.SUPPRESS)
     args.add_argument('-T', dest='max_threads', type=int, default=5, help='Max threads for file download (Default=5)')
-    args.add_argument('-t', dest='timeout', type=float, default=8, help='Max timeout per search (Default=8)')
-    args.add_argument('-j', dest='jitter', type=float, default=1, help='Jitter between requests (Default=1)')
+    args.add_argument('-t', dest='timeout', type=float, default=12, help='Max timeout per search (Default=12)')
+    args.add_argument('-j', dest='jitter', type=float, default=2, help='Jitter between requests (Default=2)')
 
     search = args.add_argument_group("Search Options")
     search.add_argument('-s', '--search', dest='engine', default='google,bing', type=lambda x: utils.delimiter2list(x), help='Search Engine (Default=\'google,bing\')')
