@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 setup(
     name='pymetasec',
     version='1.2.0',
-    author= 'm8sec',
+    author='m8sec',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/m8sec/pymeta',
@@ -18,7 +18,7 @@ setup(
         'requests>=2.28.1',
         'bs4>=0.0.1'
     ],
-    classifiers = [
+    classifiers=[
         "Environment :: Console",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
