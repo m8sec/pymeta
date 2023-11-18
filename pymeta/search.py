@@ -1,17 +1,20 @@
+import logging
 import os
 import re
 import sys
-import logging
-import requests
 import threading
-from time import sleep
+from datetime import datetime, timedelta
 from random import choice
-from pymeta.logger import Log
+from time import sleep
+from urllib.parse import urlparse
+
+import requests
 from bs4 import BeautifulSoup
 from tldextract import extract
-from urllib.parse import urlparse
-from datetime import datetime, timedelta
 from urllib3 import disable_warnings, exceptions
+
+from pymeta.logger import Log
+
 disable_warnings(exceptions.InsecureRequestWarning)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 logging.getLogger("tldextract").setLevel(logging.CRITICAL)
@@ -41,7 +44,10 @@ class Timer(threading.Thread):
 
 
 class PyMeta:
-    def __init__(self, search_engine, target, file_type,  timeout, conn_timeout=3, proxies=[], jitter=0, max_results=50):
+    def __init__(self, search_engine, target, file_type, timeout, conn_timeout=3, proxies=None, jitter=0,
+                 max_results=50):
+        if proxies is None:
+            proxies = []
         self.search_engine = search_engine
         self.file_type = file_type.lower()
         self.conn_timeout = conn_timeout
@@ -52,7 +58,9 @@ class PyMeta:
         self.jitter = jitter
 
         self.results = []
-        self.regex = re.compile("[https|https]([^\)]+){}([^\)]+)\.{}".format(self.target, self.file_type))
+        self.regex = re.compile(
+            f"[https|https]([^\)]+){self.target}([^\)]+)\.{self.file_type}"
+        )
         self.url = {'google': 'https://www.google.com/search?q=site:{}+filetype:{}&num=100&start={}',
                     'bing': 'http://www.bing.com/search?q=site:{}%20filetype:{}&first={}'}
 
@@ -70,18 +78,20 @@ class PyMeta:
 
                 if http_code != 200:
                     Log.info("{:<3} | {:<4} - {} ({})".format(len(self.results), self.file_type, url, http_code))
-                    Log.warn('None 200 response, exiting search ({})'.format(http_code))
+                    Log.warn(f'None 200 response, exiting search ({http_code})')
                     break
 
                 self.page_parser(resp)
                 Log.info("{:<3} | {:<4} - {} ({})".format(len(self.results), self.file_type, url, http_code))
 
                 if len(self.results) >= self.max_results:
-                    Log.info('Max results hit, exiting search (max: {})'.format(self.max_results))
+                    Log.info(f'Max results hit, exiting search (max: {self.max_results})')
                     break
 
                 if len(self.results) <= last_result:
-                    logging.debug("No new results, exiting search ({}:{})".format(last_result, len(self.results)))
+                    logging.debug(
+                        f"No new results, exiting search ({last_result}:{len(self.results)})"
+                    )
                     break
 
                 sleep(self.jitter)
@@ -97,19 +107,19 @@ class PyMeta:
             try:
                 self.results_handler(link)
             except Exception as e:
-                Log.warn('Failed Parsing: {}- {}'.format(link.get('href'), e))
+                Log.warn(f"Failed Parsing: {link.get('href')}- {e}")
 
     def results_handler(self, link):
         url = str(link.get('href'))
         if self.regex.match(url):
             self.results.append(url)
-            logging.debug('Added URL: {}'.format(url))
+            logging.debug(f'Added URL: {url}')
 
 
 def get_statuscode(resp):
     try:
         return resp.status_code
-    except:
+    except Exception:
         return 0
 
 
@@ -120,19 +130,18 @@ def get_proxy(proxies):
 
 def download_file(url, dwnld_dir, timeout=6):
     try:
-        logging.debug('Downloading: {}'.format(url))
-        response = requests.get(url, headers={'User-Agent':get_agent()}, verify=False, timeout=timeout)
+        logging.debug(f'Downloading: {url}')
+        response = requests.get(url, headers={'User-Agent': get_agent()}, verify=False, timeout=timeout)
         http_code = get_statuscode(response)
 
         if http_code != 200:
-            Log.fail('Download Failed ({}) - {}'.format(http_code, url))
+            Log.fail(f'Download Failed ({http_code}) - {url}')
             return
 
         with open(os.path.join(dwnld_dir, url.split("/")[-1]), 'wb') as f:
             f.write(response.content)
     except Exception as e:
-        logging.debug("Download Error: {}".format(e))
-        pass
+        logging.debug(f"Download Error: {e}")
 
 
 def web_request(url, timeout=3, proxies=[], **kwargs):
@@ -142,18 +151,15 @@ def web_request(url, timeout=3, proxies=[], **kwargs):
         p = r.prepare()
         return s.send(p, timeout=timeout, verify=False, proxies=get_proxy(proxies))
     except requests.exceptions.TooManyRedirects as e:
-        Log.fail('Proxy Error: {}'.format(e))
-    except:
+        Log.fail(f'Proxy Error: {e}')
+    except Exception:
         pass
     return False
 
 
 def extract_links(resp):
-    links = []
     soup = BeautifulSoup(resp.content, 'lxml')
-    for link in soup.findAll('a'):
-        links.append(link)
-    return links
+    return list(soup.findAll('a'))
 
 
 def extract_subdomain(url):
@@ -161,8 +167,8 @@ def extract_subdomain(url):
 
 
 def extract_webdomain(url):
-    x = extract(url)    # extract base domain from URL
-    return x.domain+'.'+x.suffix if x.suffix else x.domain
+    x = extract(url)  # extract base domain from URL
+    return f'{x.domain}.{x.suffix}' if x.suffix else x.domain
 
 
 def get_agent():
@@ -187,4 +193,3 @@ def get_agent():
         '''Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko''',
         '''Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36''',
         '''Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'''])
-
