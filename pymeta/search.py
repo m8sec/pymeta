@@ -9,7 +9,7 @@ from random import choice
 from pymeta.logger import Log
 from bs4 import BeautifulSoup
 from tldextract import extract
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from datetime import datetime, timedelta
 from urllib3 import disable_warnings, exceptions
 disable_warnings(exceptions.InsecureRequestWarning)
@@ -123,10 +123,15 @@ def clean_filename(filename):
     # Extract the extension and remove any query string or other characters after it
     match = re.search(r'\.({})($|\?)'.format('|'.join(supported_extensions)), filename, re.IGNORECASE)
     if match:
-        return filename[:match.end(1)]
+        filename = filename[:match.end(1)]
     else:
-        # If no supported extension is found, return the original filename as is
-        return filename
+        return filename  # If no supported extension is found, return the original filename as is
+
+    # Remove URL encoding and replace special characters with underscores
+    decoded_filename = unquote(filename)
+    cleaned_filename = re.sub(r'[^a-zA-Z0-9_.-]', '_', decoded_filename)
+
+    return cleaned_filename
 
 def download_file(url, dwnld_dir, timeout=6):
     try:
