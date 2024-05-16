@@ -1,6 +1,7 @@
 import os
 import logging
 from pymeta.logger import Log
+from pymeta.search import clean_filename
 from subprocess import getoutput
 from shutil import move
 
@@ -35,6 +36,8 @@ def url_match(urls, filename):
 
     for url in urls:
         if filename.split("/")[-1] in url:
+            return url
+        elif filename.split("/")[-1] == clean_filename(url.split("/")[-1]):
             return url
     return "n/a"
 

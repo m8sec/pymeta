@@ -9,7 +9,7 @@ from random import choice
 from pymeta.logger import Log
 from bs4 import BeautifulSoup
 from tldextract import extract
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from datetime import datetime, timedelta
 from urllib3 import disable_warnings, exceptions
 disable_warnings(exceptions.InsecureRequestWarning)
@@ -117,6 +117,21 @@ def get_proxy(proxies):
     tmp = choice(proxies) if proxies else False
     return {"http": tmp, "https": tmp} if tmp else {}
 
+def clean_filename(filename):
+    supported_extensions = ['pdf', 'xls', 'xlsx', 'csv', 'doc', 'docx', 'ppt', 'pptx']
+
+    # Extract the extension and remove any query string or other characters after it
+    match = re.search(r'\.({})($|\?)'.format('|'.join(supported_extensions)), filename, re.IGNORECASE)
+    if match:
+        filename = filename[:match.end(1)]
+    else:
+        return filename  # If no supported extension is found, return the original filename as is
+
+    # Remove URL encoding and replace special characters with underscores
+    decoded_filename = unquote(filename)
+    cleaned_filename = re.sub(r'[^a-zA-Z0-9_.-]', '_', decoded_filename)
+
+    return cleaned_filename
 
 def download_file(url, dwnld_dir, timeout=6):
     try:
@@ -128,12 +143,11 @@ def download_file(url, dwnld_dir, timeout=6):
             Log.fail('Download Failed ({}) - {}'.format(http_code, url))
             return
 
-        with open(os.path.join(dwnld_dir, url.split("/")[-1]), 'wb') as f:
+        with open(os.path.join(dwnld_dir, clean_filename(url.split("/")[-1])), 'wb') as f:
             f.write(response.content)
     except Exception as e:
         logging.debug("Download Error: {}".format(e))
         pass
-
 
 def web_request(url, timeout=3, proxies=[], **kwargs):
     try:
